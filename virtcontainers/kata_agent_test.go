@@ -660,9 +660,9 @@ func TestAgentConfigure(t *testing.T) {
 func TestCmdToKataProcess(t *testing.T) {
 	assert := assert.New(t)
 
-	cmd := Cmd{
+	cmd := types.Cmd{
 		Args:         strings.Split("foo", " "),
-		Envs:         []EnvVar{},
+		Envs:         []types.EnvVar{},
 		WorkDir:      "/",
 		User:         "1000",
 		PrimaryGroup: "1000",

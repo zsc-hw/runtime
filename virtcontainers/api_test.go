@@ -38,15 +38,15 @@ var containerAnnotations = map[string]string{
 	"container.hello": "container.world",
 }
 
-func newBasicTestCmd() Cmd {
-	envs := []EnvVar{
+func newBasicTestCmd() types.Cmd {
+	envs := []types.EnvVar{
 		{
 			Var:   "PATH",
 			Value: "/bin:/usr/bin:/sbin:/usr/sbin",
 		},
 	}
 
-	cmd := Cmd{
+	cmd := types.Cmd{
 		Args:    strings.Split("/bin/sh", " "),
 		Envs:    envs,
 		WorkDir: "/",
@@ -2044,14 +2044,14 @@ func createNewSandboxConfig(hType HypervisorType, aType AgentType, aConfig inter
 func createNewContainerConfigs(numOfContainers int) []ContainerConfig {
 	var contConfigs []ContainerConfig
 
-	envs := []EnvVar{
+	envs := []types.EnvVar{
 		{
 			Var:   "PATH",
 			Value: "/bin:/usr/bin:/sbin:/usr/sbin",
 		},
 	}
 
-	cmd := Cmd{
+	cmd := types.Cmd{
 		Args:    strings.Split("/bin/ps -A", " "),
 		Envs:    envs,
 		WorkDir: "/",

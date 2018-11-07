@@ -173,7 +173,7 @@ func (m *VCMock) StopContainer(ctx context.Context, sandboxID, containerID strin
 }
 
 // EnterContainer implements the VC function of the same name.
-func (m *VCMock) EnterContainer(ctx context.Context, sandboxID, containerID string, cmd vc.Cmd) (vc.VCSandbox, vc.VCContainer, *vc.Process, error) {
+func (m *VCMock) EnterContainer(ctx context.Context, sandboxID, containerID string, cmd types.Cmd) (vc.VCSandbox, vc.VCContainer, *types.Process, error) {
 	if m.EnterContainerFunc != nil {
 		return m.EnterContainerFunc(ctx, sandboxID, containerID, cmd)
 	}

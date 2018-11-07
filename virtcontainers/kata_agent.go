@@ -26,6 +26,7 @@ import (
 	ns "github.com/kata-containers/runtime/virtcontainers/pkg/nsenter"
 	"github.com/kata-containers/runtime/virtcontainers/pkg/types"
 	"github.com/kata-containers/runtime/virtcontainers/pkg/uuid"
+	vshim "github.com/kata-containers/runtime/virtcontainers/shim"
 	"github.com/kata-containers/runtime/virtcontainers/utils"
 	opentracing "github.com/opentracing/opentracing-go"
 
@@ -90,7 +91,7 @@ type KataAgentState struct {
 }
 
 type kataAgent struct {
-	shim  shim
+	shim  vshim.Shim
 	proxy proxy
 
 	// lock protects the client pointer
@@ -179,7 +180,7 @@ func (k *kataAgent) init(ctx context.Context, sandbox *Sandbox, config interface
 		return err
 	}
 
-	k.shim, err = newShim(sandbox.config.ShimType)
+	k.shim, err = vshim.NewShim(sandbox.config.ShimType)
 	if err != nil {
 		return err
 	}
@@ -273,7 +274,7 @@ func (k *kataAgent) createSandbox(sandbox *Sandbox) error {
 	return k.configure(sandbox.hypervisor, sandbox.id, k.getSharePath(sandbox.id), k.proxyBuiltIn, nil)
 }
 
-func cmdToKataProcess(cmd Cmd) (process *grpc.Process, err error) {
+func cmdToKataProcess(cmd types.Cmd) (process *grpc.Process, err error) {
 	var i uint64
 	var extraGids []uint32
 
@@ -339,7 +340,7 @@ func cmdToKataProcess(cmd Cmd) (process *grpc.Process, err error) {
 	return process, nil
 }
 
-func cmdEnvsToStringSlice(ev []EnvVar) []string {
+func cmdEnvsToStringSlice(ev []types.EnvVar) []string {
 	var env []string
 
 	for _, e := range ev {
@@ -350,7 +351,7 @@ func cmdEnvsToStringSlice(ev []EnvVar) []string {
 	return env
 }
 
-func (k *kataAgent) exec(sandbox *Sandbox, c Container, cmd Cmd) (*Process, error) {
+func (k *kataAgent) exec(sandbox *Sandbox, c Container, cmd types.Cmd) (*types.Process, error) {
 	span, _ := k.trace("exec")
 	defer span.Finish()
 
@@ -382,7 +383,7 @@ func (k *kataAgent) exec(sandbox *Sandbox, c Container, cmd Cmd) (*Process, erro
 		},
 	}
 
-	return prepareAndStartShim(sandbox, k.shim, c.id, req.ExecId,
+	return vshim.PrepareAndStartShim(sandbox.config.ShimType, sandbox.config.ShimConfig, k.shim, c.id, req.ExecId,
 		k.state.URL, cmd, []ns.NSType{}, enterNSList)
 }
 
@@ -904,7 +905,8 @@ func (k *kataAgent) buildContainerRootfs(sandbox *Sandbox, c *Container, rootPat
 	return nil, nil
 }
 
-func (k *kataAgent) createContainer(sandbox *Sandbox, c *Container) (p *Process, err error) {
+func (k *kataAgent) createContainer(sandbox *Sandbox, c *Container) (p *types.
+	Process, err error) {
 	span, _ := k.trace("createContainer")
 	defer span.Finish()
 
@@ -1015,7 +1017,7 @@ func (k *kataAgent) createContainer(sandbox *Sandbox, c *Container) (p *Process,
 		})
 	}
 
-	return prepareAndStartShim(sandbox, k.shim, c.id, req.ExecId,
+	return vshim.PrepareAndStartShim(sandbox.config.ShimType, sandbox.config.ShimConfig, k.shim, c.id, req.ExecId,
 		k.state.URL, c.config.Cmd, createNSList, enterNSList)
 }
 

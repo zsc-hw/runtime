@@ -16,6 +16,7 @@ import (
 	"github.com/BurntSushi/toml"
 	vc "github.com/kata-containers/runtime/virtcontainers"
 	"github.com/kata-containers/runtime/virtcontainers/pkg/oci"
+	vshim "github.com/kata-containers/runtime/virtcontainers/shim"
 	"github.com/kata-containers/runtime/virtcontainers/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -27,7 +28,7 @@ const (
 
 var (
 	defaultProxy = vc.KataProxyType
-	defaultShim  = vc.KataShimType
+	defaultShim  = vshim.KataShimType
 )
 
 // The TOML configuration file contains a number of sections (or
@@ -447,13 +448,13 @@ func newFactoryConfig(f factory) (oci.FactoryConfig, error) {
 	return oci.FactoryConfig{Template: f.Template}, nil
 }
 
-func newShimConfig(s shim) (vc.ShimConfig, error) {
+func newShimConfig(s shim) (vshim.Config, error) {
 	path, err := s.path()
 	if err != nil {
-		return vc.ShimConfig{}, err
+		return vshim.Config{}, err
 	}
 
-	return vc.ShimConfig{
+	return vshim.Config{
 		Path:  path,
 		Debug: s.debug(),
 	}, nil
@@ -503,9 +504,9 @@ func updateRuntimeConfig(configPath string, tomlConf tomlConfig, config *oci.Run
 	for k, shim := range tomlConf.Shim {
 		switch k {
 		case ccShimTableType:
-			config.ShimType = vc.CCShimType
+			config.ShimType = vshim.CCShimType
 		case kataShimTableType:
-			config.ShimType = vc.KataShimType
+			config.ShimType = vshim.KataShimType
 		}
 
 		shConfig, err := newShimConfig(shim)
@@ -567,7 +568,7 @@ func initConfig(builtIn bool) (config oci.RuntimeConfig, err error) {
 
 	if builtIn {
 		defaultProxy = vc.KataBuiltInProxyType
-		defaultShim = vc.KataBuiltInShimType
+		defaultShim = vshim.KataBuiltInShimType
 
 		defaultAgentConfig = vc.KataAgentConfig{LongLiveConn: true}
 	}

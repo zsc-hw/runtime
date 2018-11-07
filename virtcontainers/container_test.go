@@ -21,6 +21,7 @@ import (
 	"github.com/kata-containers/runtime/virtcontainers/device/drivers"
 	"github.com/kata-containers/runtime/virtcontainers/device/manager"
 	vcAnnotations "github.com/kata-containers/runtime/virtcontainers/pkg/annotations"
+	"github.com/kata-containers/runtime/virtcontainers/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -458,7 +459,7 @@ func TestContainerEnterErrorsOnContainerStates(t *testing.T) {
 			},
 		},
 	}
-	cmd := Cmd{}
+	cmd := types.Cmd{}
 
 	// Container state undefined
 	_, err := c.enter(cmd)

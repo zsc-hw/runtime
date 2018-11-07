@@ -24,6 +24,8 @@ import (
 	vc "github.com/kata-containers/runtime/virtcontainers"
 	"github.com/kata-containers/runtime/virtcontainers/device/config"
 	vcAnnotations "github.com/kata-containers/runtime/virtcontainers/pkg/annotations"
+	"github.com/kata-containers/runtime/virtcontainers/pkg/types"
+	vshim "github.com/kata-containers/runtime/virtcontainers/shim"
 )
 
 const (
@@ -108,15 +110,15 @@ func TestMinimalSandboxConfig(t *testing.T) {
 		HypervisorType: vc.QemuHypervisor,
 		AgentType:      vc.HyperstartAgent,
 		ProxyType:      vc.CCProxyType,
-		ShimType:       vc.CCShimType,
+		ShimType:       vshim.CCShimType,
 		Console:        consolePath,
 	}
 
 	capList := []string{"CAP_AUDIT_WRITE", "CAP_KILL", "CAP_NET_BIND_SERVICE"}
 
-	expectedCmd := vc.Cmd{
+	expectedCmd := types.Cmd{
 		Args: []string{"sh"},
-		Envs: []vc.EnvVar{
+		Envs: []types.EnvVar{
 			{
 				Var:   "PATH",
 				Value: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
@@ -133,7 +135,7 @@ func TestMinimalSandboxConfig(t *testing.T) {
 		Interactive:         true,
 		Console:             consolePath,
 		NoNewPrivileges:     true,
-		Capabilities: vc.LinuxCapabilities{
+		Capabilities: types.LinuxCapabilities{
 			Bounding:    capList,
 			Effective:   capList,
 			Inheritable: capList,
@@ -220,7 +222,7 @@ func TestMinimalSandboxConfig(t *testing.T) {
 		HypervisorType: vc.QemuHypervisor,
 		AgentType:      vc.HyperstartAgent,
 		ProxyType:      vc.CCProxyType,
-		ShimType:       vc.CCShimType,
+		ShimType:       vshim.CCShimType,
 
 		NetworkModel:  vc.DefaultNetworkModel,
 		NetworkConfig: expectedNetworkConfig,
@@ -429,7 +431,7 @@ func TestStateToOCIState(t *testing.T) {
 
 func TestEnvVars(t *testing.T) {
 	envVars := []string{"foo=bar", "TERM=xterm", "HOME=/home/foo", "TERM=\"bar\"", "foo=\"\""}
-	expectecVcEnvVars := []vc.EnvVar{
+	expectecVcEnvVars := []types.EnvVar{
 		{
 			Var:   "foo",
 			Value: "bar",

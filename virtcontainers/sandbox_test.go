@@ -24,6 +24,7 @@ import (
 	"github.com/kata-containers/runtime/virtcontainers/device/drivers"
 	"github.com/kata-containers/runtime/virtcontainers/device/manager"
 	"github.com/kata-containers/runtime/virtcontainers/pkg/annotations"
+	"github.com/kata-containers/runtime/virtcontainers/pkg/types"
 	"golang.org/x/sys/unix"
 )
 
@@ -1390,7 +1391,7 @@ func TestEnterContainer(t *testing.T) {
 	defer cleanUp()
 
 	contID := "999"
-	cmd := Cmd{}
+	cmd := types.Cmd{}
 	_, _, err = s.EnterContainer(contID, cmd)
 	assert.NotNil(t, err, "Entering non-existing container should fail")
 

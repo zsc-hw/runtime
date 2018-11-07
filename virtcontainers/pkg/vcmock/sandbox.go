@@ -113,8 +113,8 @@ func (s *Sandbox) Status() vc.SandboxStatus {
 }
 
 // EnterContainer implements the VCSandbox function of the same name.
-func (s *Sandbox) EnterContainer(containerID string, cmd vc.Cmd) (vc.VCContainer, *vc.Process, error) {
-	return &Container{}, &vc.Process{}, nil
+func (s *Sandbox) EnterContainer(containerID string, cmd types.Cmd) (vc.VCContainer, *types.Process, error) {
+	return &Container{}, &types.Process{}, nil
 }
 
 // Monitor implements the VCSandbox function of the same name.

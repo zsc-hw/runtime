@@ -45,7 +45,7 @@ func (n *noopAgent) disconnect() error {
 }
 
 // exec is the Noop agent command execution implementation. It does nothing.
-func (n *noopAgent) exec(sandbox *Sandbox, c Container, cmd Cmd) (*Process, error) {
+func (n *noopAgent) exec(sandbox *Sandbox, c Container, cmd types.Cmd) (*types.Process, error) {
 	return nil, nil
 }
 
@@ -60,8 +60,8 @@ func (n *noopAgent) stopSandbox(sandbox *Sandbox) error {
 }
 
 // createContainer is the Noop agent Container creation implementation. It does nothing.
-func (n *noopAgent) createContainer(sandbox *Sandbox, c *Container) (*Process, error) {
-	return &Process{}, nil
+func (n *noopAgent) createContainer(sandbox *Sandbox, c *Container) (*types.Process, error) {
+	return &types.Process{}, nil
 }
 
 // startContainer is the Noop agent Container starting implementation. It does nothing.

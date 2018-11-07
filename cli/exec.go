@@ -16,6 +16,7 @@ import (
 
 	vc "github.com/kata-containers/runtime/virtcontainers"
 	"github.com/kata-containers/runtime/virtcontainers/pkg/oci"
+	"github.com/kata-containers/runtime/virtcontainers/pkg/types"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/urfave/cli"
 )
@@ -247,7 +248,7 @@ func execute(ctx context.Context, context *cli.Context) error {
 		user = params.ociProcess.User.Username
 	}
 
-	cmd := vc.Cmd{
+	cmd := types.Cmd{
 		Args:        params.ociProcess.Args,
 		Envs:        envVars,
 		WorkDir:     params.ociProcess.Cwd,

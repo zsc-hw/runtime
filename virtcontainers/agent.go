@@ -156,7 +156,7 @@ type agent interface {
 	createSandbox(sandbox *Sandbox) error
 
 	// exec will tell the agent to run a command in an already running container.
-	exec(sandbox *Sandbox, c Container, cmd Cmd) (*Process, error)
+	exec(sandbox *Sandbox, c Container, cmd types.Cmd) (*types.Process, error)
 
 	// startSandbox will tell the agent to start all containers related to the Sandbox.
 	startSandbox(sandbox *Sandbox) error
@@ -165,7 +165,7 @@ type agent interface {
 	stopSandbox(sandbox *Sandbox) error
 
 	// createContainer will tell the agent to create a container related to a Sandbox.
-	createContainer(sandbox *Sandbox, c *Container) (*Process, error)
+	createContainer(sandbox *Sandbox, c *Container) (*types.Process, error)
 
 	// startContainer will tell the agent to start a container related to a Sandbox.
 	startContainer(sandbox *Sandbox, c *Container) error

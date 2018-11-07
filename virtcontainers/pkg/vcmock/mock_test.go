@@ -421,20 +421,20 @@ func TestVCMockEnterContainer(t *testing.T) {
 	assert.Nil(m.EnterContainerFunc)
 
 	ctx := context.Background()
-	cmd := vc.Cmd{}
+	cmd := types.Cmd{}
 	_, _, _, err := m.EnterContainer(ctx, testSandboxID, testContainerID, cmd)
 	assert.Error(err)
 	assert.True(IsMockError(err))
 
-	m.EnterContainerFunc = func(ctx context.Context, sandboxID, containerID string, cmd vc.Cmd) (vc.VCSandbox, vc.VCContainer, *vc.Process, error) {
-		return &Sandbox{}, &Container{}, &vc.Process{}, nil
+	m.EnterContainerFunc = func(ctx context.Context, sandboxID, containerID string, cmd types.Cmd) (vc.VCSandbox, vc.VCContainer, *types.Process, error) {
+		return &Sandbox{}, &Container{}, &types.Process{}, nil
 	}
 
 	sandbox, container, process, err := m.EnterContainer(ctx, testSandboxID, testContainerID, cmd)
 	assert.NoError(err)
 	assert.Equal(sandbox, &Sandbox{})
 	assert.Equal(container, &Container{})
-	assert.Equal(process, &vc.Process{})
+	assert.Equal(process, &types.Process{})
 
 	// reset
 	m.EnterContainerFunc = nil

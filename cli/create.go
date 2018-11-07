@@ -16,6 +16,7 @@ import (
 	vc "github.com/kata-containers/runtime/virtcontainers"
 	vf "github.com/kata-containers/runtime/virtcontainers/factory"
 	"github.com/kata-containers/runtime/virtcontainers/pkg/oci"
+	"github.com/kata-containers/runtime/virtcontainers/pkg/types"
 	"github.com/urfave/cli"
 )
 
@@ -161,7 +162,7 @@ func create(ctx context.Context, containerID, bundlePath, console, pidFilePath s
 
 	disableOutput := noNeedForOutput(detach, ociSpec.Process.Terminal)
 
-	var process vc.Process
+	var process types.Process
 	switch containerType {
 	case vc.PodSandbox:
 		process, err = createSandbox(ctx, ociSpec, runtimeConfig, containerID, bundlePath, console, disableOutput, systemdCgroup)
@@ -250,25 +251,25 @@ func setKernelParams(containerID string, runtimeConfig *oci.RuntimeConfig) error
 }
 
 func createSandbox(ctx context.Context, ociSpec oci.CompatOCISpec, runtimeConfig oci.RuntimeConfig,
-	containerID, bundlePath, console string, disableOutput, systemdCgroup bool) (vc.Process, error) {
+	containerID, bundlePath, console string, disableOutput, systemdCgroup bool) (types.Process, error) {
 	span, ctx := trace(ctx, "createSandbox")
 	defer span.Finish()
 
 	err := setKernelParams(containerID, &runtimeConfig)
 	if err != nil {
-		return vc.Process{}, err
+		return types.Process{}, err
 	}
 
 	sandboxConfig, err := oci.SandboxConfig(ociSpec, runtimeConfig, bundlePath, containerID, console, disableOutput, systemdCgroup)
 	if err != nil {
-		return vc.Process{}, err
+		return types.Process{}, err
 	}
 
 	// Important to create the network namespace before the sandbox is
 	// created, because it is not responsible for the creation of the
 	// netns if it does not exist.
 	if err := setupNetworkNamespace(&sandboxConfig.NetworkConfig); err != nil {
-		return vc.Process{}, err
+		return types.Process{}, err
 	}
 
 	// Run pre-start OCI hooks.
@@ -276,12 +277,12 @@ func createSandbox(ctx context.Context, ociSpec oci.CompatOCISpec, runtimeConfig
 		return preStartHooks(ctx, ociSpec, containerID, bundlePath)
 	})
 	if err != nil {
-		return vc.Process{}, err
+		return types.Process{}, err
 	}
 
 	sandbox, err := vci.CreateSandbox(ctx, sandboxConfig)
 	if err != nil {
-		return vc.Process{}, err
+		return types.Process{}, err
 	}
 
 	sid := sandbox.ID()
@@ -291,11 +292,11 @@ func createSandbox(ctx context.Context, ociSpec oci.CompatOCISpec, runtimeConfig
 
 	containers := sandbox.GetAllContainers()
 	if len(containers) != 1 {
-		return vc.Process{}, fmt.Errorf("BUG: Container list from sandbox is wrong, expecting only one container, found %d containers", len(containers))
+		return types.Process{}, fmt.Errorf("BUG: Container list from sandbox is wrong, expecting only one container, found %d containers", len(containers))
 	}
 
 	if err := addContainerIDMapping(ctx, containerID, sandbox.ID()); err != nil {
-		return vc.Process{}, err
+		return types.Process{}, err
 	}
 
 	return containers[0].Process(), nil
@@ -316,7 +317,7 @@ func setEphemeralStorageType(ociSpec oci.CompatOCISpec) oci.CompatOCISpec {
 }
 
 func createContainer(ctx context.Context, ociSpec oci.CompatOCISpec, containerID, bundlePath,
-	console string, disableOutput bool) (vc.Process, error) {
+	console string, disableOutput bool) (types.Process, error) {
 
 	span, ctx := trace(ctx, "createContainer")
 	defer span.Finish()
@@ -325,12 +326,12 @@ func createContainer(ctx context.Context, ociSpec oci.CompatOCISpec, containerID
 
 	contConfig, err := oci.ContainerConfig(ociSpec, bundlePath, containerID, console, disableOutput)
 	if err != nil {
-		return vc.Process{}, err
+		return types.Process{}, err
 	}
 
 	sandboxID, err := ociSpec.SandboxID()
 	if err != nil {
-		return vc.Process{}, err
+		return types.Process{}, err
 	}
 
 	kataLog = kataLog.WithField("sandbox", sandboxID)
@@ -339,7 +340,7 @@ func createContainer(ctx context.Context, ociSpec oci.CompatOCISpec, containerID
 
 	s, c, err := vci.CreateContainer(ctx, sandboxID, contConfig)
 	if err != nil {
-		return vc.Process{}, err
+		return types.Process{}, err
 	}
 
 	// Run pre-start OCI hooks.
@@ -347,11 +348,11 @@ func createContainer(ctx context.Context, ociSpec oci.CompatOCISpec, containerID
 		return preStartHooks(ctx, ociSpec, containerID, bundlePath)
 	})
 	if err != nil {
-		return vc.Process{}, err
+		return types.Process{}, err
 	}
 
 	if err := addContainerIDMapping(ctx, containerID, sandboxID); err != nil {
-		return vc.Process{}, err
+		return types.Process{}, err
 	}
 
 	return c.Process(), nil

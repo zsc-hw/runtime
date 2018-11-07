@@ -25,6 +25,8 @@ import (
 	"github.com/kata-containers/runtime/virtcontainers/device/config"
 	vcAnnotations "github.com/kata-containers/runtime/virtcontainers/pkg/annotations"
 	dockershimAnnotations "github.com/kata-containers/runtime/virtcontainers/pkg/annotations/dockershim"
+	"github.com/kata-containers/runtime/virtcontainers/pkg/types"
+	vshim "github.com/kata-containers/runtime/virtcontainers/shim"
 	"github.com/kata-containers/runtime/virtcontainers/utils"
 )
 
@@ -111,7 +113,7 @@ type RuntimeConfig struct {
 	ProxyType   vc.ProxyType
 	ProxyConfig vc.ProxyConfig
 
-	ShimType   vc.ShimType
+	ShimType   vshim.Type
 	ShimConfig interface{}
 
 	Console string
@@ -143,7 +145,7 @@ func SetLogger(ctx context.Context, logger *logrus.Entry) {
 	ociLog = logger.WithFields(fields)
 }
 
-func cmdEnvs(spec CompatOCISpec, envs []vc.EnvVar) []vc.EnvVar {
+func cmdEnvs(spec CompatOCISpec, envs []types.EnvVar) []types.EnvVar {
 	for _, env := range spec.Process.Env {
 		kv := strings.Split(env, "=")
 		if len(kv) < 2 {
@@ -151,7 +153,7 @@ func cmdEnvs(spec CompatOCISpec, envs []vc.EnvVar) []vc.EnvVar {
 		}
 
 		envs = append(envs,
-			vc.EnvVar{
+			types.EnvVar{
 				Var:   kv[0],
 				Value: kv[1],
 			})
@@ -245,9 +247,9 @@ func containerDeviceInfos(spec CompatOCISpec) ([]config.DeviceInfo, error) {
 	return devices, nil
 }
 
-func containerCapabilities(s CompatOCISpec) (vc.LinuxCapabilities, error) {
+func containerCapabilities(s CompatOCISpec) (types.LinuxCapabilities, error) {
 	capabilities := s.Process.Capabilities
-	var c vc.LinuxCapabilities
+	var c types.LinuxCapabilities
 
 	// In spec v1.0.0-rc4, capabilities was a list of strings. This was changed
 	// to an object with v1.0.0-rc5.
@@ -286,7 +288,7 @@ func containerCapabilities(s CompatOCISpec) (vc.LinuxCapabilities, error) {
 			list = append(list, str.(string))
 		}
 
-		c = vc.LinuxCapabilities{
+		c = types.LinuxCapabilities{
 			Bounding:    list,
 			Effective:   list,
 			Inheritable: list,
@@ -304,9 +306,9 @@ func containerCapabilities(s CompatOCISpec) (vc.LinuxCapabilities, error) {
 }
 
 // ContainerCapabilities return a LinuxCapabilities for virtcontainer
-func ContainerCapabilities(s CompatOCISpec) (vc.LinuxCapabilities, error) {
+func ContainerCapabilities(s CompatOCISpec) (types.LinuxCapabilities, error) {
 	if s.Process == nil {
-		return vc.LinuxCapabilities{}, fmt.Errorf("ContainerCapabilities, Process is nil")
+		return types.LinuxCapabilities{}, fmt.Errorf("ContainerCapabilities, Process is nil")
 	}
 	return containerCapabilities(s)
 }
@@ -511,9 +513,9 @@ func ContainerConfig(ocispec CompatOCISpec, bundlePath, cid, console string, det
 	}
 	ociLog.Debugf("container rootfs: %s", rootfs)
 
-	cmd := vc.Cmd{
+	cmd := types.Cmd{
 		Args:            ocispec.Process.Args,
-		Envs:            cmdEnvs(ocispec, []vc.EnvVar{}),
+		Envs:            cmdEnvs(ocispec, []types.EnvVar{}),
 		WorkDir:         ocispec.Process.Cwd,
 		User:            strconv.FormatUint(uint64(ocispec.Process.User.UID), 10),
 		PrimaryGroup:    strconv.FormatUint(uint64(ocispec.Process.User.GID), 10),
@@ -534,7 +536,7 @@ func ContainerConfig(ocispec CompatOCISpec, bundlePath, cid, console string, det
 	}
 
 	if ocispec.Process != nil {
-		caps, ok := ocispec.Process.Capabilities.(vc.LinuxCapabilities)
+		caps, ok := ocispec.Process.Capabilities.(types.LinuxCapabilities)
 		if !ok {
 			return vc.ContainerConfig{}, fmt.Errorf("Unexpected format for capabilities: %v", ocispec.Process.Capabilities)
 		}
@@ -636,8 +638,8 @@ func StateToOCIState(state vc.State) string {
 
 // EnvVars converts an OCI process environment variables slice
 // into a virtcontainers EnvVar slice.
-func EnvVars(envs []string) ([]vc.EnvVar, error) {
-	var envVars []vc.EnvVar
+func EnvVars(envs []string) ([]types.EnvVar, error) {
+	var envVars []types.EnvVar
 
 	envDelimiter := "="
 	expectedEnvLen := 2
@@ -646,17 +648,17 @@ func EnvVars(envs []string) ([]vc.EnvVar, error) {
 		envSlice := strings.SplitN(env, envDelimiter, expectedEnvLen)
 
 		if len(envSlice) < expectedEnvLen {
-			return []vc.EnvVar{}, fmt.Errorf("Wrong string format: %s, expecting only %v parameters separated with %q",
+			return []types.EnvVar{}, fmt.Errorf("Wrong string format: %s, expecting only %v parameters separated with %q",
 				env, expectedEnvLen, envDelimiter)
 		}
 
 		if envSlice[0] == "" {
-			return []vc.EnvVar{}, fmt.Errorf("Environment variable cannot be empty")
+			return []types.EnvVar{}, fmt.Errorf("Environment variable cannot be empty")
 		}
 
 		envSlice[1] = strings.Trim(envSlice[1], "' ")
 
-		envVar := vc.EnvVar{
+		envVar := types.EnvVar{
 			Var:   envSlice[0],
 			Value: envSlice[1],
 		}

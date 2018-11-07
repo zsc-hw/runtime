@@ -31,7 +31,7 @@ type Container struct {
 	MockID          string
 	MockURL         string
 	MockToken       string
-	MockProcess     vc.Process
+	MockProcess     types.Process
 	MockPid         int
 	MockSandbox     *Sandbox
 	MockAnnotations map[string]string
@@ -57,7 +57,7 @@ type VCMock struct {
 
 	CreateContainerFunc      func(ctx context.Context, sandboxID string, containerConfig vc.ContainerConfig) (vc.VCSandbox, vc.VCContainer, error)
 	DeleteContainerFunc      func(ctx context.Context, sandboxID, containerID string) (vc.VCContainer, error)
-	EnterContainerFunc       func(ctx context.Context, sandboxID, containerID string, cmd vc.Cmd) (vc.VCSandbox, vc.VCContainer, *vc.Process, error)
+	EnterContainerFunc       func(ctx context.Context, sandboxID, containerID string, cmd types.Cmd) (vc.VCSandbox, vc.VCContainer, *types.Process, error)
 	KillContainerFunc        func(ctx context.Context, sandboxID, containerID string, signal syscall.Signal, all bool) error
 	StartContainerFunc       func(ctx context.Context, sandboxID, containerID string) (vc.VCContainer, error)
 	StatusContainerFunc      func(ctx context.Context, sandboxID, containerID string) (vc.ContainerStatus, error)

@@ -35,7 +35,7 @@ type VC interface {
 
 	CreateContainer(ctx context.Context, sandboxID string, containerConfig ContainerConfig) (VCSandbox, VCContainer, error)
 	DeleteContainer(ctx context.Context, sandboxID, containerID string) (VCContainer, error)
-	EnterContainer(ctx context.Context, sandboxID, containerID string, cmd Cmd) (VCSandbox, VCContainer, *Process, error)
+	EnterContainer(ctx context.Context, sandboxID, containerID string, cmd types.Cmd) (VCSandbox, VCContainer, *types.Process, error)
 	KillContainer(ctx context.Context, sandboxID, containerID string, signal syscall.Signal, all bool) error
 	StartContainer(ctx context.Context, sandboxID, containerID string) (VCContainer, error)
 	StatusContainer(ctx context.Context, sandboxID, containerID string) (ContainerStatus, error)
@@ -77,7 +77,7 @@ type VCSandbox interface {
 	StartContainer(containerID string) (VCContainer, error)
 	StatusContainer(containerID string) (ContainerStatus, error)
 	StatsContainer(containerID string) (ContainerStats, error)
-	EnterContainer(containerID string, cmd Cmd) (VCContainer, *Process, error)
+	EnterContainer(containerID string, cmd types.Cmd) (VCContainer, *types.Process, error)
 	UpdateContainer(containerID string, resources specs.LinuxResources) error
 	WaitProcess(containerID, processID string) (int32, error)
 	SignalProcess(containerID, processID string, signal syscall.Signal, all bool) error
@@ -101,6 +101,6 @@ type VCContainer interface {
 	GetToken() string
 	ID() string
 	Sandbox() VCSandbox
-	Process() Process
+	Process() types.Process
 	SetPid(pid int) error
 }

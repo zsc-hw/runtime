@@ -14,6 +14,7 @@ import (
 	deviceApi "github.com/kata-containers/runtime/virtcontainers/device/api"
 	deviceConfig "github.com/kata-containers/runtime/virtcontainers/device/config"
 	"github.com/kata-containers/runtime/virtcontainers/pkg/types"
+	vshim "github.com/kata-containers/runtime/virtcontainers/shim"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
@@ -524,7 +525,7 @@ func StopContainer(ctx context.Context, sandboxID, containerID string) (VCContai
 
 // EnterContainer is the virtcontainers container command execution entry point.
 // EnterContainer enters an already running container and runs a given command.
-func EnterContainer(ctx context.Context, sandboxID, containerID string, cmd Cmd) (VCSandbox, VCContainer, *Process, error) {
+func EnterContainer(ctx context.Context, sandboxID, containerID string, cmd types.Cmd) (VCSandbox, VCContainer, *types.Process, error) {
 	span, ctx := trace(ctx, "EnterContainer")
 	defer span.Finish()
 
@@ -608,7 +609,7 @@ func statusContainer(sandbox *Sandbox, containerID string) (ContainerStatus, err
 				container.state.State == StatePaused) &&
 				container.process.Pid > 0 {
 
-				running, err := isShimRunning(container.process.Pid)
+				running, err := vshim.IsShimRunning(container.process.Pid)
 				if err != nil {
 					return ContainerStatus{}, err
 				}
